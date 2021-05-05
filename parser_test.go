@@ -1,7 +1,6 @@
 package goseo_test
 
 import (
-	"fmt"
 	"testing"
 
 	goseo "github.com/dant89/go-seo"
@@ -10,5 +9,7 @@ import (
 func TestParser(t *testing.T) {
 	html := "<html><body><header><h1>Test H1</h1></header></body></html>"
 	result, _ := goseo.GetH1(html)
-	fmt.Println(result)
+	if result != "Test H1" {
+		t.Errorf("unexpected H1 result")
+	}
 }
