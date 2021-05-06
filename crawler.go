@@ -3,7 +3,6 @@ package goseo
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -24,7 +23,7 @@ func (w Webpage) Crawl() (string, error) {
 
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Fatalln(err)
+		return "", fmt.Errorf("could not read response body: %s", w.Url)
 	}
 
 	return string(body), nil
