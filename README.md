@@ -14,6 +14,7 @@ H1 status: The H1 is too short, aim for 20 characters minimum.
 H2 count: 18
 H3 count: 7
 H4 count: 0
+Link count: 82
 ```
 
 ## Improvements
