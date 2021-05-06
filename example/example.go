@@ -33,4 +33,16 @@ func main() {
 	fmt.Println("SEO advice for:", url)
 	fmt.Printf("H1 currently: '%s'\n", h1)
 	fmt.Println("H1 status:", h1LengthStatus)
+
+	h2Count := goseo.GetAllElements(response, "h2")
+	fmt.Println("H2 count:", len(h2Count))
+
+	h3Count := goseo.GetAllElements(response, "h3")
+	fmt.Println("H3 count:", len(h3Count))
+
+	h4Count := goseo.GetAllElements(response, "h4")
+	fmt.Println("H4 count:", len(h4Count))
+
+	aCount := goseo.GetAllElements(response, "a")
+	fmt.Println("Link count:", len(aCount))
 }
