@@ -14,35 +14,37 @@ func main() {
 	}
 
 	url := os.Args[1]
-	webpage := goseo.Webpage{Url: url}
+	webpage := goseo.Crawler{}
+	parser := goseo.Parser{}
 
-	response, err := webpage.Crawl()
+	response, err := webpage.Crawl(url)
 	if err != nil {
 		fmt.Println("Could not crawl the URL:", err.Error())
 		os.Exit(2)
 	}
 
-	h1, err := goseo.GetFirstElement(response, "h1")
+	h1, err := parser.GetFirstElement(response, "h1")
 	if err != nil {
 		fmt.Println("Could not parse a h1 in the HTML:", err.Error())
 		os.Exit(3)
 	}
 
+	// TODO tidy globally used function
 	h1LengthStatus := goseo.CheckH1Length(h1)
 
 	fmt.Println("SEO advice for:", url)
 	fmt.Printf("H1 currently: '%s'\n", h1)
 	fmt.Println("H1 status:", h1LengthStatus)
 
-	h2Count := goseo.GetAllElements(response, "h2")
+	h2Count := parser.GetAllElements(response, "h2")
 	fmt.Println("H2 count:", len(h2Count))
 
-	h3Count := goseo.GetAllElements(response, "h3")
+	h3Count := parser.GetAllElements(response, "h3")
 	fmt.Println("H3 count:", len(h3Count))
 
-	h4Count := goseo.GetAllElements(response, "h4")
+	h4Count := parser.GetAllElements(response, "h4")
 	fmt.Println("H4 count:", len(h4Count))
 
-	aCount := goseo.GetAllElements(response, "a")
+	aCount := parser.GetAllElements(response, "a")
 	fmt.Println("Link count:", len(aCount))
 }

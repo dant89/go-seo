@@ -10,7 +10,39 @@ import (
 	"golang.org/x/net/html"
 )
 
-func GetFirstElement(rawHtml string, element string) (string, error) {
+type Parser struct{}
+
+type ParserChecks interface {
+	GetAllLinkHrefs()
+	GetFirstElement()
+	GetAllElements()
+}
+
+func (p Parser) GetAllLinkHrefs(rawHtml string) []string {
+	var formattedElements []string
+	doc, _ := html.Parse(strings.NewReader(rawHtml))
+
+	// recursively parse the html until we find a H1
+	var crawler func(*html.Node)
+	crawler = func(node *html.Node) {
+		if node.Type == html.ElementNode && node.Data == "a" {
+			for _, a := range node.Attr {
+				if a.Key == "href" {
+					formattedElements = append(formattedElements, a.Val)
+					break
+				}
+			}
+		}
+		for child := node.FirstChild; child != nil; child = child.NextSibling {
+			crawler(child)
+		}
+	}
+	crawler(doc)
+
+	return formattedElements
+}
+
+func (p Parser) GetFirstElement(rawHtml string, element string, raw bool) (string, error) {
 	var foundElement *html.Node
 	doc, _ := html.Parse(strings.NewReader(rawHtml))
 
@@ -28,14 +60,16 @@ func GetFirstElement(rawHtml string, element string) (string, error) {
 	crawler(doc)
 	if foundElement != nil {
 		formatted := renderNode(foundElement)
-		stripped := stripHtml(formatted)
-		return stripped, nil
+		if raw == false {
+			formatted = stripHtml(formatted)
+		}
+		return formatted, nil
 	}
 
 	return "", errors.New("missing <" + element + "> in the node tree")
 }
 
-func GetAllElements(rawHtml string, element string) []string {
+func (p Parser) GetAllElements(rawHtml string, element string, raw bool) []string {
 	var foundElements []*html.Node
 	var formattedElements []string
 	doc, _ := html.Parse(strings.NewReader(rawHtml))
@@ -56,7 +90,10 @@ func GetAllElements(rawHtml string, element string) []string {
 	if len(foundElements) > 0 {
 		for _, v := range foundElements {
 			formatted := renderNode(v)
-			formattedElements = append(formattedElements, stripHtml(formatted))
+			if raw == false {
+				formatted = stripHtml(formatted)
+			}
+			formattedElements = append(formattedElements, formatted)
 		}
 	}
 

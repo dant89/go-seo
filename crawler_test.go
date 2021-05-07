@@ -7,9 +7,9 @@ import (
 )
 
 func TestFetcher(t *testing.T) {
-	webpage := goseo.Webpage{"https://bbc.co.uk"}
+	crawler := goseo.Crawler{}
 
-	body, _ := webpage.Crawl()
+	body, _ := crawler.Crawl("https://bbc.co.uk")
 	if body == "" {
 		t.Errorf("unexpected empty body")
 	}

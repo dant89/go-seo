@@ -13,6 +13,9 @@ type Reporter interface {
 const H1ShortError = "The H1 is too short, aim for 20 characters minimum."
 const H1LongError = "The H1 is too long, aim for 70 characters maximum."
 
+// TODO find a better method for analyser functions
+// Possibly a struct per validation type with
+// interface grouping functionality?
 func CheckH1Length(h1 string) Report {
 	report := Report{passed: true}
 
