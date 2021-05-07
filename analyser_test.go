@@ -9,19 +9,29 @@ import (
 func TestAnalyser(t *testing.T) {
 	h1Short := "This is a test"
 	h1ShortResult := goseo.CheckH1Length(h1Short)
-	if h1ShortResult != "The H1 is too short, aim for 20 characters minimum." {
-		t.Errorf("Incorrect message for short H1")
+	if h1ShortResult.Passed == false {
+		for _, err := range h1ShortResult.Feedback {
+			if err != goseo.H1ShortError {
+				t.Errorf("Incorrect message for short H1")
+			}
+		}
 	}
 
 	h1Long := "This is a test, This is a test, This is a test, This is a test, This is a test, This is a test"
 	h1LongResult := goseo.CheckH1Length(h1Long)
-	if h1LongResult != "The H1 is too long, aim for 70 characters maximum." {
-		t.Errorf("Incorrect message for long H1")
+	if h1LongResult.Passed == false {
+		for _, err := range h1LongResult.Feedback {
+			if err != goseo.H1LongError {
+				t.Errorf("Incorrect message for long H1")
+			}
+		}
 	}
 
 	h1Perfect := "This is a test, This is a test, This is a test"
 	h1PerfectResult := goseo.CheckH1Length(h1Perfect)
-	if h1PerfectResult != "The H1 is perfect." {
-		t.Errorf("Incorrect message for prefect H1.")
+	if h1PerfectResult.Passed == true {
+		if len(h1PerfectResult.Feedback) > 0 {
+			t.Errorf("Incorrect message for perfect H1.")
+		}
 	}
 }

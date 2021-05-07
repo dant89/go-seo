@@ -1,13 +1,25 @@
 package goseo
 
-func CheckH1Length(h1 string) string {
+type Report struct {
+	Passed   bool
+	Feedback []string
+}
+
+const H1ShortError = "The H1 is too short, aim for 20 characters minimum."
+const H1LongError = "The H1 is too long, aim for 70 characters maximum."
+
+func CheckH1Length(h1 string) Report {
+	report := Report{Passed: true}
+
 	if len(h1) < 20 {
-		return "The H1 is too short, aim for 20 characters minimum."
+		report.Passed = false
+		report.Feedback = append(report.Feedback, H1ShortError)
 	}
 
 	if len(h1) > 70 {
-		return "The H1 is too long, aim for 70 characters maximum."
+		report.Passed = false
+		report.Feedback = append(report.Feedback, H1LongError)
 	}
 
-	return "The H1 is perfect."
+	return report
 }
