@@ -58,18 +58,18 @@ func crawlPage(wg *sync.WaitGroup, maxWorkers chan struct{}, originalUrl string,
 		parser := Parser{}
 		results := parser.GetAllLinkHrefs(response)
 		for _, result := range results {
-			strippedHash, err := formatUrl(result, originalUrl)
+			formattedUrl, err := formatUrl(result, originalUrl)
 			if err != nil {
 				addFoundUrl(url.Url, true, []string{}, depth)
 				<-maxWorkers
 				return
 			}
 			if internalOnly {
-				if strings.Contains(strippedHash, originalUrl) {
-					formattedUrls = append(formattedUrls, strippedHash)
+				if strings.Contains(formattedUrl, originalUrl) {
+					formattedUrls = append(formattedUrls, formattedUrl)
 				}
 			} else {
-				formattedUrls = append(formattedUrls, strippedHash)
+				formattedUrls = append(formattedUrls, formattedUrl)
 			}
 		}
 
@@ -82,13 +82,13 @@ func addFoundUrl(url string, crawled bool, links []string, depth int) {
 	lock.Lock()
 	defer lock.Unlock()
 
-	urlInstace := Url{Url: url, Crawled: crawled, Depth: depth, Links: links}
-	urlsFound[url] = &urlInstace
+	newUrl := Url{Url: url, Crawled: crawled, Depth: depth, Links: links}
+	urlsFound[url] = &newUrl
 
 	if len(links) > 0 {
 		for _, link := range links {
-			urlInstace := Url{Url: link, Crawled: false, Depth: depth + 1}
-			urlsFound[link] = &urlInstace
+			newChildUrl := Url{Url: link, Crawled: false, Depth: depth + 1}
+			urlsFound[link] = &newChildUrl
 		}
 	}
 }
