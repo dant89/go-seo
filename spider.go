@@ -82,6 +82,7 @@ func addFoundUrl(url string, crawled bool, links []string, depth int) {
 	lock.Lock()
 	defer lock.Unlock()
 
+	// TODO look into bug where previous URLs are overwritten
 	newUrl := Url{Url: url, Crawled: crawled, Depth: depth, Links: links}
 	urlsFound[url] = &newUrl
 
