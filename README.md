@@ -35,7 +35,7 @@ In the future concurrency will be used to gather all internal links sitewide.
 
 ## Improvements
 - Add more analyser options and useful advice
-- Add ability to scan entire domains concurrently gathering information on a per webpage basis
 - Add ability to validate inbound / outbound links
 - Persist results to a database
 - Improve memory handling of results
+- Investigate improvements to `spider.go` concurrency and writing to shared variables

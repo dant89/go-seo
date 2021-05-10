@@ -7,6 +7,8 @@ import (
 	goseo "github.com/dant89/go-seo"
 )
 
+var spider goseo.Spider = goseo.Spider{}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Please specify a target URL")
@@ -14,15 +16,26 @@ func main() {
 	}
 
 	url := os.Args[1]
-	spider := goseo.Spider{}
+	getInternalLinks(url)
+	getAllLinks(url)
+}
 
-	internalLinks := spider.GetLinks(url, true)
+func getInternalLinks(url string) {
+	internalLinks := spider.GetLinks(url, true, 2)
 	if len(internalLinks) > 0 {
 		fmt.Println("Internal links found:")
-		for _, link := range internalLinks {
-			fmt.Println(link)
-		}
+		fmt.Println("...", len(internalLinks), "links, with a search depth of 2")
 	} else {
 		fmt.Println("No internal links found.")
+	}
+}
+
+func getAllLinks(url string) {
+	allLinks := spider.GetLinks(url, false, 2)
+	if len(allLinks) > 0 {
+		fmt.Println("Internal and external links found:")
+		fmt.Println("...", len(allLinks), "links, with a search depth of 2")
+	} else {
+		fmt.Println("No internal or external links found.")
 	}
 }

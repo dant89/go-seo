@@ -23,7 +23,7 @@ func main() {
 		os.Exit(2)
 	}
 
-	h1, err := parser.GetFirstElement(response, "h1")
+	h1, err := parser.GetFirstElement(response, "h1", false)
 	if err != nil {
 		fmt.Println("Could not parse a h1 in the HTML:", err.Error())
 		os.Exit(3)
@@ -36,15 +36,15 @@ func main() {
 	fmt.Printf("H1 currently: '%s'\n", h1)
 	fmt.Println("H1 status:", h1LengthStatus)
 
-	h2Count := parser.GetAllElements(response, "h2")
+	h2Count := parser.GetAllElements(response, "h2", false)
 	fmt.Println("H2 count:", len(h2Count))
 
-	h3Count := parser.GetAllElements(response, "h3")
+	h3Count := parser.GetAllElements(response, "h3", false)
 	fmt.Println("H3 count:", len(h3Count))
 
-	h4Count := parser.GetAllElements(response, "h4")
+	h4Count := parser.GetAllElements(response, "h4", false)
 	fmt.Println("H4 count:", len(h4Count))
 
-	aCount := parser.GetAllElements(response, "a")
+	aCount := parser.GetAllElements(response, "a", false)
 	fmt.Println("Link count:", len(aCount))
 }

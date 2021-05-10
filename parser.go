@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/grokify/html-strip-tags-go"
+	strip "github.com/grokify/html-strip-tags-go"
 	"golang.org/x/net/html"
 )
 
@@ -27,7 +27,7 @@ func (p Parser) GetAllLinkHrefs(rawHtml string) []string {
 	crawler = func(node *html.Node) {
 		if node.Type == html.ElementNode && node.Data == "a" {
 			for _, a := range node.Attr {
-				if a.Key == "href" {
+				if a.Key == "href" && (strings.HasPrefix(a.Val, "/") || strings.HasPrefix(a.Val, "http")) {
 					formattedElements = append(formattedElements, a.Val)
 					break
 				}
@@ -60,7 +60,7 @@ func (p Parser) GetFirstElement(rawHtml string, element string, raw bool) (strin
 	crawler(doc)
 	if foundElement != nil {
 		formatted := renderNode(foundElement)
-		if raw == false {
+		if !raw {
 			formatted = stripHtml(formatted)
 		}
 		return formatted, nil
@@ -90,7 +90,7 @@ func (p Parser) GetAllElements(rawHtml string, element string, raw bool) []strin
 	if len(foundElements) > 0 {
 		for _, v := range foundElements {
 			formatted := renderNode(v)
-			if raw == false {
+			if !raw {
 				formatted = stripHtml(formatted)
 			}
 			formattedElements = append(formattedElements, formatted)
