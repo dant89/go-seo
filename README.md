@@ -24,10 +24,13 @@ An example of finding all internal links in a single page can be performed by ru
 Sample output:
 ```
 Internal links found:
-https://dant.blog
-https://dant.blog/our-covid-baby-journey-108
-https://dant.blog/author/dant
-https://dant.blog/the-infrastructure-behind-smite-stats-website-96
+> 58 links
+> with a search depth of 2
+> taking 1.694995831s
+Internal and external links found:
+> 517 links
+> with a search depth of 2
+> taking 1.757099677s
 ...
 ```
 The recursive example doesn't currently give a very good example of recursive behaviour.
