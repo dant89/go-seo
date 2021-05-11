@@ -31,7 +31,6 @@ Internal and external links found:
 > 517 links
 > with a search depth of 2
 > taking 1.757099677s
-...
 ```
 The recursive example doesn't currently give a very good example of recursive behaviour.
 In the future concurrency will be used to gather all internal links sitewide.
