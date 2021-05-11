@@ -14,6 +14,11 @@ type Url struct {
 	Depth   int
 }
 
+type UrlList struct {
+	urls map[string]*Url
+	mux  sync.Mutex
+}
+
 type Spider struct {
 	Recursive bool
 }
@@ -22,16 +27,16 @@ type SpiderWeb interface {
 	GetLinks()
 }
 
-var urlsFound map[string]*Url = make(map[string]*Url)
-var maxWorkers chan struct{} = make(chan struct{}, 10)
-var lock sync.Mutex
-var wg sync.WaitGroup
+var urlsFound UrlList = UrlList{urls: make(map[string]*Url)}
 
 func (s Spider) GetLinks(url string, internalOnly bool, depth int) map[string]*Url {
+	var wg sync.WaitGroup
+	maxWorkers := make(chan struct{}, 10)
+
 	addFoundUrl(url, false, []string{}, 1)
 
 	for i := 1; i <= depth; i++ {
-		for _, value := range urlsFound {
+		for _, value := range urlsFound.urls {
 			maxWorkers <- struct{}{}
 			wg.Add(1)
 			go crawlPage(&wg, maxWorkers, url, value, internalOnly, i)
@@ -39,57 +44,59 @@ func (s Spider) GetLinks(url string, internalOnly bool, depth int) map[string]*U
 		wg.Wait()
 	}
 
-	return urlsFound
+	return urlsFound.urls
 }
 
 func crawlPage(wg *sync.WaitGroup, maxWorkers chan struct{}, originalUrl string, url *Url, internalOnly bool, depth int) {
 	defer wg.Done()
 
-	if !url.Crawled && url.Depth == depth {
-		crawler := Crawler{}
-		response, err := crawler.Crawl(url.Url)
+	if url.Crawled || url.Depth != depth {
+		<-maxWorkers
+		return
+	}
+
+	crawler := Crawler{}
+	response, err := crawler.Crawl(url.Url)
+	if err != nil {
+		addFoundUrl(url.Url, true, []string{}, depth)
+		<-maxWorkers
+		return
+	}
+
+	var formattedUrls []string
+	parser := Parser{}
+	results := parser.GetAllLinkHrefs(response)
+	for _, result := range results {
+		formattedUrl, err := formatUrl(result, originalUrl)
 		if err != nil {
 			addFoundUrl(url.Url, true, []string{}, depth)
 			<-maxWorkers
 			return
 		}
-
-		var formattedUrls []string
-		parser := Parser{}
-		results := parser.GetAllLinkHrefs(response)
-		for _, result := range results {
-			formattedUrl, err := formatUrl(result, originalUrl)
-			if err != nil {
-				addFoundUrl(url.Url, true, []string{}, depth)
-				<-maxWorkers
-				return
-			}
-			if internalOnly {
-				if strings.Contains(formattedUrl, originalUrl) {
-					formattedUrls = append(formattedUrls, formattedUrl)
-				}
-			} else {
+		if internalOnly {
+			if strings.Contains(formattedUrl, originalUrl) {
 				formattedUrls = append(formattedUrls, formattedUrl)
 			}
+		} else {
+			formattedUrls = append(formattedUrls, formattedUrl)
 		}
-
-		addFoundUrl(url.Url, true, formattedUrls, depth)
 	}
+
+	addFoundUrl(url.Url, true, formattedUrls, depth)
 	<-maxWorkers
 }
 
 func addFoundUrl(url string, crawled bool, links []string, depth int) {
-	lock.Lock()
-	defer lock.Unlock()
+	urlsFound.mux.Lock()
+	defer urlsFound.mux.Unlock()
 
-	// TODO look into bug where previous URLs are overwritten
 	newUrl := Url{Url: url, Crawled: crawled, Depth: depth, Links: links}
-	urlsFound[url] = &newUrl
+	urlsFound.urls[url] = &newUrl
 
-	if len(links) > 0 {
-		for _, link := range links {
+	for _, link := range links {
+		if _, ok := urlsFound.urls[link]; !ok {
 			newChildUrl := Url{Url: link, Crawled: false, Depth: depth + 1}
-			urlsFound[link] = &newChildUrl
+			urlsFound.urls[link] = &newChildUrl
 		}
 	}
 }
