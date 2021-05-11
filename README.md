@@ -32,12 +32,9 @@ Internal and external links found:
 > with a search depth of 2
 > taking 1.757099677s
 ```
-The recursive example doesn't currently give a very good example of recursive behaviour.
-In the future concurrency will be used to gather all internal links sitewide.
 
 ## Improvements
 - Add more analyser options and useful advice
 - Add ability to validate inbound / outbound links
 - Persist results to a database
 - Improve memory handling of results
-- Investigate improvements to `spider.go` concurrency and writing to shared variables
