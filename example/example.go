@@ -16,6 +16,7 @@ func main() {
 	}
 
 	url := os.Args[1]
+	analyser := goseo.Analyse{}
 	webpage := goseo.Crawler{}
 	parser := goseo.Parser{}
 
@@ -31,12 +32,14 @@ func main() {
 		os.Exit(3)
 	}
 
-	// TODO tidy globally used function
-	h1LengthStatus := goseo.CheckH1Length(h1)
-
+	h1Report := analyser.CheckH1Length(h1)
 	fmt.Println("SEO advice for:", url)
 	fmt.Printf("\nH1 currently: '%s'\n", h1)
-	fmt.Println("H1 status:", h1LengthStatus)
+	if !h1Report.Passed() {
+		for _, report := range h1Report.GetFeedback() {
+			fmt.Println("H1 feedback:", report)
+		}
+	}
 
 	h2Count := parser.GetAllElements(response, "h2", false)
 	fmt.Println("H2 count:", len(h2Count))
@@ -67,6 +70,6 @@ func getLinks(url string) {
 		}
 	}
 
-	fmt.Println("\nInternal links found:", internalLinkCount)
+	fmt.Println("Internal links found:", internalLinkCount)
 	fmt.Println("External links found:", externalLinkCount)
 }
