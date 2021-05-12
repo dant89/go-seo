@@ -7,6 +7,8 @@ import (
 	goseo "github.com/dant89/go-seo"
 )
 
+var spider goseo.Spider = goseo.Spider{}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Please specify a target URL")
@@ -33,7 +35,7 @@ func main() {
 	h1LengthStatus := goseo.CheckH1Length(h1)
 
 	fmt.Println("SEO advice for:", url)
-	fmt.Printf("H1 currently: '%s'\n", h1)
+	fmt.Printf("\nH1 currently: '%s'\n", h1)
 	fmt.Println("H1 status:", h1LengthStatus)
 
 	h2Count := parser.GetAllElements(response, "h2", false)
@@ -45,6 +47,26 @@ func main() {
 	h4Count := parser.GetAllElements(response, "h4", false)
 	fmt.Println("H4 count:", len(h4Count))
 
-	aCount := parser.GetAllElements(response, "a", false)
-	fmt.Println("Link count:", len(aCount))
+	getLinks(url)
+}
+
+func getLinks(url string) {
+	links := spider.GetLinks(url, 1)
+
+	internalLinkCount := 0
+	for _, link := range links {
+		if link.Internal {
+			internalLinkCount++
+		}
+	}
+
+	externalLinkCount := 0
+	for _, link := range links {
+		if !link.Internal {
+			externalLinkCount++
+		}
+	}
+
+	fmt.Println("\nInternal links found:", internalLinkCount)
+	fmt.Println("External links found:", externalLinkCount)
 }

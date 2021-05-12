@@ -8,10 +8,11 @@ import (
 )
 
 type Url struct {
-	Url     string
-	Links   []string
-	Crawled bool
-	Depth   int
+	Url      string
+	Links    []string
+	Crawled  bool
+	Depth    int
+	Internal bool
 }
 
 type UrlList struct {
@@ -28,18 +29,19 @@ type SpiderWeb interface {
 }
 
 var urlsFound UrlList = UrlList{urls: make(map[string]*Url)}
+var wg sync.WaitGroup
 
-func (s Spider) GetLinks(url string, internalOnly bool, depth int) map[string]*Url {
-	var wg sync.WaitGroup
-	maxWorkers := make(chan struct{}, 10)
-
-	addFoundUrl(url, false, []string{}, 1)
+func (s Spider) GetLinks(url string, depth int) map[string]*Url {
+	maxWorkers := make(chan struct{}, 1000)
+	addFoundUrl(url, false, []string{}, 1, url)
 
 	for i := 1; i <= depth; i++ {
-		for _, value := range urlsFound.urls {
-			maxWorkers <- struct{}{}
-			wg.Add(1)
-			go crawlPage(&wg, maxWorkers, url, value, internalOnly, i)
+		for _, urlFound := range urlsFound.urls {
+			if !urlFound.Crawled && urlFound.Depth == i && urlFound.Internal {
+				maxWorkers <- struct{}{}
+				wg.Add(1)
+				go crawlPage(maxWorkers, url, urlFound, i)
+			}
 		}
 		wg.Wait()
 	}
@@ -47,55 +49,39 @@ func (s Spider) GetLinks(url string, internalOnly bool, depth int) map[string]*U
 	return urlsFound.urls
 }
 
-func crawlPage(wg *sync.WaitGroup, maxWorkers chan struct{}, originalUrl string, url *Url, internalOnly bool, depth int) {
+func crawlPage(maxWorkers chan struct{}, originalUrl string, url *Url, depth int) {
 	defer wg.Done()
 
-	if url.Crawled || url.Depth != depth {
-		<-maxWorkers
-		return
-	}
-
+	formattedUrls := []string{}
 	crawler := Crawler{}
 	response, err := crawler.Crawl(url.Url)
-	if err != nil {
-		addFoundUrl(url.Url, true, []string{}, depth)
-		<-maxWorkers
-		return
-	}
-
-	var formattedUrls []string
-	parser := Parser{}
-	results := parser.GetAllLinkHrefs(response)
-	for _, result := range results {
-		formattedUrl, err := formatUrl(result, originalUrl)
-		if err != nil {
-			addFoundUrl(url.Url, true, []string{}, depth)
-			<-maxWorkers
-			return
-		}
-		if internalOnly {
-			if strings.Contains(formattedUrl, originalUrl) {
+	if err == nil {
+		parser := Parser{}
+		results := parser.GetAllLinkHrefs(response)
+		for _, result := range results {
+			formattedUrl, err := formatUrl(result, originalUrl)
+			if err == nil {
 				formattedUrls = append(formattedUrls, formattedUrl)
 			}
-		} else {
-			formattedUrls = append(formattedUrls, formattedUrl)
 		}
 	}
 
-	addFoundUrl(url.Url, true, formattedUrls, depth)
+	addFoundUrl(url.Url, true, formattedUrls, depth, originalUrl)
 	<-maxWorkers
 }
 
-func addFoundUrl(url string, crawled bool, links []string, depth int) {
+func addFoundUrl(url string, crawled bool, links []string, depth int, originalUrl string) {
 	urlsFound.mux.Lock()
 	defer urlsFound.mux.Unlock()
 
-	newUrl := Url{Url: url, Crawled: crawled, Depth: depth, Links: links}
+	internalUrl := strings.Contains(url, originalUrl)
+	newUrl := Url{Url: url, Crawled: crawled, Depth: depth, Links: links, Internal: internalUrl}
 	urlsFound.urls[url] = &newUrl
 
 	for _, link := range links {
 		if _, ok := urlsFound.urls[link]; !ok {
-			newChildUrl := Url{Url: link, Crawled: false, Depth: depth + 1}
+			internalUrl := strings.Contains(link, originalUrl)
+			newChildUrl := Url{Url: link, Crawled: false, Depth: depth + 1, Internal: internalUrl}
 			urlsFound.urls[link] = &newChildUrl
 		}
 	}
