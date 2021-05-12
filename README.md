@@ -11,11 +11,10 @@ Sample output:
 SEO advice for: https://dant.blog
 
 H1 currently: 'Dan&#39;s Blog'
-H1 status: {false []}
+H1 feedback: The H1 is too short, aim for 20 characters minimum.
 H2 count: 18
 H3 count: 7
 H4 count: 0
-
 Internal links found: 20
 External links found: 15
 ```
