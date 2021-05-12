@@ -55,14 +55,17 @@ func crawlPage(maxWorkers chan struct{}, originalUrl string, url *Url, depth int
 	formattedUrls := []string{}
 	crawler := Crawler{}
 	response, err := crawler.Crawl(url.Url)
-	if err == nil {
-		parser := Parser{}
-		results := parser.GetAllLinkHrefs(response)
-		for _, result := range results {
-			formattedUrl, err := formatUrl(result, originalUrl)
-			if err == nil {
-				formattedUrls = append(formattedUrls, formattedUrl)
-			}
+	if err != nil {
+		addFoundUrl(url.Url, true, formattedUrls, depth, originalUrl)
+		<-maxWorkers
+	}
+
+	parser := Parser{}
+	results := parser.GetAllLinkHrefs(response)
+	for _, result := range results {
+		formattedUrl, err := formatUrl(result, originalUrl)
+		if err == nil {
+			formattedUrls = append(formattedUrls, formattedUrl)
 		}
 	}
 
