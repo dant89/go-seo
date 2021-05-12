@@ -10,7 +10,7 @@ import (
 func TestSpider(t *testing.T) {
 
 	spider := goseo.Spider{}
-	links := spider.GetLinks("https://dant.blog", true, 1)
+	links := spider.GetLinks("https://dant.blog", 1)
 	if len(links) < 1 {
 		t.Errorf("no links found")
 	}
